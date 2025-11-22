@@ -402,15 +402,12 @@ def main():
     load_dotenv()
     
     openai_api_key = os.getenv("OPEN_API_KEY")
-    # Nota: Rimosso il controllo di esistenza del file prompt.txt qui per semplicità, 
-    # ma la lettura deve avvenire nel blocco try.
-    
     if not openai_api_key:
         print("AVVISO: OPEN_API_KEY non trovata. Le funzioni di generazione (RAG) falliranno.")
     client_AI = OpenAI(api_key=openai_api_key)
 
     # 2. PDF Processing
-    pdf_path = Path("5workers50tasks.pdf") # Nome del file di input
+    pdf_path = Path("5workers50tasks.pdf") # CORREZIONE: Usa il nome del file caricato
     if not pdf_path.exists():
         print(f"ERRORE: File PDF non trovato al percorso: {pdf_path}. Assicurati di averlo in locale.")
         return
@@ -432,7 +429,7 @@ def main():
         print(f"Total extracted chunks: {len(chunked_text)}")
         
         for chunk in chunked_text:
-            chunk['doc_source'] = "review.pdf" 
+            chunk['doc_source'] = "5workers50tasks.pdf" # Correzione del nome sorgente
 
         # Connessione al DB
         client_mongo, db = connect_to_mongo(uri=mongo_uri, db_name="Day-to-dAI")
@@ -446,34 +443,29 @@ def main():
         # Creazione Indice Vettoriale
         build_vector_search_index(collection)
         
-        # 4. FASE DI QUERY RAG & REPORT GENERATION
+        # 4. FASE DI QUERY RAG
         print("\n--- INIZIO FASE RAG: INTERROGAZIONE DEL DATABASE ---")
         
-        # Legge l'intero prompt complesso dal file
-        with open("prompt.txt", "r") as f:
-            full_prompt_text = f.read()
-
-        # Il prompt RAG necessita solo della query finale per il retrieval, 
-        # ma l'LLM (generate_answer) riceverà l'intero full_prompt_text (il prompt complesso)
-        # Qui usiamo una query semplice per l'embedding, dato che il prompt complesso è troppo lungo.
-        file_input=open("prompt.txt","r")
-        sample_query_for_retrieval = file_input.read()
+        prompt_file=open("prompt.txt", "r")
+        sample_query=prompt_file.read()
+        context_texts = retrieve_context(collection, sample_query, top_k=5)
         
-        # Retrieval (Ricerca dei chunk rilevanti)
-        context_texts = retrieve_context(collection, sample_query_for_retrieval, top_k=5)
-        
-        # Costruisce il prompt RAG combinando il prompt complesso e il contesto recuperato
-        rag_prompt = create_rag_prompt(full_prompt_text, context_texts)
+        # Prompting (Costruzione del prompt)
+        rag_prompt = create_rag_prompt(sample_query, context_texts)
         print(f"Prompt RAG costruito (Contesto: {len(context_texts)} chunk)")
 
         # Generazione (Chiamata all'LLM)
         answer = generate_answer(client_AI, rag_prompt)
+        print(answer)
         
-        file_output=open("output.txt","w")
-        print("\n--- RISPOSTA GENERATA DALL'AI ---")
-        print(f"Output in output.txt")
-        file_output.write(answer)
-        print("-----------------------------------")
+        output_path = "output.txt"
+        
+        try:
+            with open(output_path, "w", encoding="utf-8") as file_output:
+                file_output.write(answer)
+            print(f"Scrittura completata con successo in: {os.path.abspath(output_path)}")
+        except Exception as write_error:
+            print(f"Errore specifico durante la scrittura del file: {write_error}")
         
     except Exception as e:
         # Gestione degli errori
@@ -484,6 +476,7 @@ def main():
         if client_mongo:
             client_mongo.close()
             print("Connessione MongoDB chiusa.")
+
 
 if __name__ == "__main__":
     main()
