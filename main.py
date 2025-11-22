@@ -35,11 +35,26 @@ def text_formatter(text: str) -> str:
 def open_and_read_pdf_by_outline(pdf_path: str) -> list[str]:
     """
     Opens a PDF file, reads its text content based on the outline (chapters).
+    If no outline is found, the entire document is read as a single chunk.
     """
     doc = fitz.open(pdf_path)
     doc_list = []
 
     outline = doc.get_toc()
+
+    if not outline:
+        # Fallback: Read the entire PDF as one chunk if no outline is found
+        full_text = ""
+        for page_num in range(len(doc)):
+            full_text += doc[page_num].get_text()
+        
+        # Aggiungi un'intestazione per il chunk completo per aiutare l'AI
+        full_text = "Full Document Text:\n\n" + full_text
+        doc_list.append(text_formatter(full_text))
+        print("AVVISO: Nessun indice trovato. Letto l'intero documento come un unico chunk.")
+        return doc_list
+
+    # Logica originale se l'outline ESISTE:
     for current_index, (lev, title, page_n) in enumerate(outline):
         start_page_number = page_n - 1
 
@@ -172,13 +187,75 @@ def embed_texts(collection):
         print("ATTENZIONE: Alcuni documenti potrebbero non aver ricevuto l'embedding. Controlla gli errori.")
 
 def build_vector_search_index(collection):
-    """Crea l'indice di ricerca vettoriale per la collection."""
+    """Crea l'indice di ricerca vettoriale per la collection e attende che sia pronto."""
     
     index_name="vector_index1"
     embedding_dim = EMBEDDING_DIM 
     embeddings_path = 'embedding' 
 
-    # Usa SearchIndexModel come richiesto
+    search_index_model = SearchIndexModel(
+        definition = {
+            "fields": [
+            {
+                "type": "vector",
+                "numDimensions": embedding_dim,
+                "path": embeddings_path,
+                "similarity": "cosine"
+            }
+            ]
+        },
+        name = index_name,
+        type = "vectorSearch"
+    )
+
+    print(f"Tentativo di creare l'indice Atlas Vector Search '{index_name}'...")
+    try:
+        collection.create_search_index(model=search_index_model)
+        print(f"Indice '{index_name}' creato con successo.")
+    except Exception as e:
+        # 1. Gestione Indice Esistente (OK)
+        if "Index with name" in str(e):
+             print(f"L'indice '{index_name}' esiste già. Saltando la creazione.")
+        # 2. Gestione Limite FTS Raggiunto (CORREZIONE - Permetti di proseguire)
+        elif "The maximum number of FTS indexes has been reached" in str(e):
+             print("AVVISO: Limite massimo di indici Atlas raggiunto. Assumiamo che 'vector_index1' sia già attivo e proseguiamo.")
+        else:
+             raise RuntimeError(f"ERRORE durante la creazione dell'indice: {e}")
+
+    # Logica di Attesa (Polling)
+    print("Polling per verificare se l'indice è pronto. Potrebbe richiedere tempo.")
+    
+    def is_index_ready(index):
+        return index.get("queryable") is True and index.get("status") == "READY"
+
+    max_attempts = 12 
+    attempts = 0
+
+    while attempts < max_attempts:
+        try:
+            indices = list(collection.list_search_indexes(name=index_name))
+            
+            if len(indices) and is_index_ready(indices[0]):
+                print(f"Indice '{index_name}' è pronto per la query. Procedo.")
+                return 
+            
+            time.sleep(5)
+            attempts += 1
+            print(f"Attesa... Tentativo {attempts}/{max_attempts}")
+
+        except Exception as e:
+            print(f"Errore di polling temporaneo: {e}. Continuo ad attendere.")
+            time.sleep(5)
+            attempts += 1
+            
+    raise TimeoutError(f"Timeout: L'indice '{index_name}' non è diventato queryable dopo {max_attempts * 5} secondi. Controllare lo stato su Atlas.")
+    """Crea l'indice di ricerca vettoriale per la collection e attende che sia pronto."""
+    
+    index_name="vector_index1"
+    embedding_dim = EMBEDDING_DIM 
+    embeddings_path = 'embedding' 
+
+    # 1. Definizione dell'indice usando SearchIndexModel (come richiesto)
     search_index_model = SearchIndexModel(
         definition = {
             "fields": [
@@ -202,9 +279,41 @@ def build_vector_search_index(collection):
         if "Index with name" in str(e):
              print(f"L'indice '{index_name}' esiste già. Saltando la creazione.")
         else:
-             print(f"ERRORE durante la creazione dell'indice: {e}")
+             # Se la creazione fallisce per altri motivi, lo script si ferma qui
+             raise RuntimeError(f"ERRORE durante la creazione dell'indice: {e}")
 
-# --- FUNZIONI DI QUERY RAG AGGIUNTE ---
+    # 2. Attesa (Polling) che l'indice diventi queryable (CORREZIONE CRITICA)
+    print("Polling per verificare se l'indice è pronto. Potrebbe richiedere fino a un minuto.")
+    
+    # La funzione predicate verifica se lo stato dell'indice è 'queryable'
+    def is_index_ready(index):
+        return index.get("queryable") is True and index.get("status") == "READY"
+
+    max_attempts = 12 
+    attempts = 0
+
+    while attempts < max_attempts:
+        try:
+            # list_search_indexes restituisce un cursore, list() lo materializza
+            indices = list(collection.list_search_indexes(name=index_name))
+            
+            if len(indices) and is_index_ready(indices[0]):
+                print(f"Indice '{index_name}' è pronto per la query. Procedo.")
+                return # Esci dalla funzione
+            
+            # Se non è pronto, aspetta e riprova
+            time.sleep(5)
+            attempts += 1
+            print(f"Attesa... Tentativo {attempts}/{max_attempts}")
+
+        except Exception as e:
+            # Gestione di eventuali timeout o errori temporanei durante il polling
+            print(f"Errore di polling temporaneo: {e}. Continuo ad attendere.")
+            time.sleep(5)
+            attempts += 1
+            
+    # Se il loop finisce senza successo
+    raise TimeoutError(f"Timeout: L'indice '{index_name}' non è diventato queryable dopo {max_attempts * 5} secondi.")
 
 def retrieve_context(collection: Collection, query: str, top_k: int = 5) -> List[str]:
     """
@@ -263,14 +372,21 @@ def create_rag_prompt(query: str, context_texts: List[str]) -> str:
 
 def generate_answer(client_AI: OpenAI, prompt: str, model: str = "gpt-3.5-turbo") -> str:
     """
-    Effettua la chiamata all'API di OpenAI con il prompt RAG.
+    Effettua la chiamata all'API di OpenAI con il prompt RAG, forzando la risposta in inglese.
     """
+    
+    # Messaggio di sistema modificato per richiedere la risposta in inglese
+    system_message = (
+        "You are a specialized corporate assistant focused on mental health and productivity "
+        "within the IT consulting domain. Your objective is to provide concise, professional, "
+        "and data-backed answers. **ALWAYS answer in English.**"
+    )
     
     try:
         response = client_AI.chat.completions.create(
             model=model,
             messages=[
-                {"role": "system", "content": "Sei un assistente aziendale per la salute mentale e la produttività. Il tuo obiettivo è fornire risposte concise e professionali basate su dati." },
+                {"role": "system", "content": system_message}, # Uso del messaggio di sistema modificato
                 {"role": "user", "content": prompt}
             ],
             temperature=0.0  
@@ -278,7 +394,7 @@ def generate_answer(client_AI: OpenAI, prompt: str, model: str = "gpt-3.5-turbo"
         return response.choices[0].message.content
         
     except Exception as e:
-        return f"ERRORE durante la chiamata all'API OpenAI: {e}"
+        return f"ERRORE during OpenAI API call: {e}" # Ho modificato anche l'errore in inglese per coerenza
 
 def main():
     # 1. Setup
@@ -291,14 +407,13 @@ def main():
     client_AI = OpenAI(api_key=openai_api_key)
 
     # 2. PDF Processing
-    pdf_path = Path("review.pdf")
+    pdf_path = Path("review.pdf") # CORREZIONE: Usa il nome del file caricato
     if not pdf_path.exists():
         print(f"ERRORE: File PDF non trovato al percorso: {pdf_path}. Assicurati di averlo in locale.")
         return
 
     # 3. MongoDB Connection and Insertion (Blocco Try/Except per la Robustezza)
     mongo_uri = os.getenv("MONGO_URI")
-    print(f"Using MONGO_URI: {mongo_uri}")
     if not mongo_uri:
         raise ValueError("MONGO_URI non trovata. Assicurati che sia nel file .env.")
 
@@ -306,11 +421,15 @@ def main():
         # Estrazione e Chunking
         chapter_texts = open_and_read_pdf_by_outline(pdf_path=pdf_path)
         
+        if not chapter_texts:
+            print("ERRORE: Il file PDF non ha restituito alcun testo. Interruzione.")
+            return
+
         chunked_text = sum([chunk_text_with_padding(text, 500, 1) for text in tqdm(chapter_texts, desc="Chunking texts")], [])
         print(f"Total extracted chunks: {len(chunked_text)}")
         
         for chunk in chunked_text:
-            chunk['doc_source'] = "One-time_review"
+            chunk['doc_source'] = "review.pdf" # Correzione del nome sorgente
 
         # Connessione al DB
         client_mongo, db = connect_to_mongo(uri=mongo_uri, db_name="Day-to-dAI")
@@ -327,9 +446,8 @@ def main():
         # 4. FASE DI QUERY RAG
         print("\n--- INIZIO FASE RAG: INTERROGAZIONE DEL DATABASE ---")
         
-        sample_query = "Quali sono le principali preoccupazioni dei dipendenti riguardo al bilanciamento tra vita lavorativa e personale?"
-        
-        # Retrieval (Ricerca dei chunk rilevanti)
+        prompt_file=open("prompt.txt", "r")
+        sample_query=prompt_file.read()
         context_texts = retrieve_context(collection, sample_query, top_k=5)
         
         # Prompting (Costruzione del prompt)
@@ -339,9 +457,10 @@ def main():
         # Generazione (Chiamata all'LLM)
         answer = generate_answer(client_AI, rag_prompt)
         
+        file_output=open("output.txt", "w")
+        
         print("\n--- RISPOSTA GENERATA DALL'AI ---")
-        print(f"Domanda: {sample_query}")
-        print(f"Risposta: {answer}")
+        print(f"Answer: {answer}", file=file_output)
         print("-----------------------------------")
         
     except Exception as e:

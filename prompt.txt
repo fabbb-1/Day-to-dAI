@@ -1,0 +1,44 @@
+Construct the PERFECT weekly schedule for the team based on the following data sources and adhering to the strict **Zero-Burnout** policy.
+
+---
+DATA INPUTS:
+---
+
+A. FOUNDATIONAL KNOWLEDGE (Retrieved from PDF One-Time Review):
+[Insert the relevant facts about WorkerID, Name, Role, Skills, Stress Tolerance, and the TaskID, Description, EstimatedHours, Complexity, and StressLevel extracted from the PDF pages 9-10/10]
+
+B. WEEKLY CONSTRAINTS:
+[Insert Total Available Work Hours for each worker this week (e.g., Alice: 40h, Marco: 35h)]
+
+C. CURRENT STATUS:
+[Insert the current operational status, such as any pre-existing fatigue scores or external time blocks (e.g., Marco has a mandatory 5-hour training session already scheduled)]
+
+---
+OPTIMIZATION GOAL: GENERATE THE PERFECT SCHEDULE
+---
+
+1.  **Define "Perfect":** The perfect schedule is the one that achieves **100% Task Completion** while simultaneously generating the **lowest possible Collective Weekly Stress Score (CWSS)** across the entire team, and guaranteeing that **no single worker exceeds their individual Stress Tolerance Threshold (STT)**.
+2.  **Constraint Prioritization (Strict):** If a worker's predicted Weekly Stress Score (WSS) exceeds their STT, the schedule is **ILLEGAL** and must be flagged for Manager review.
+3.  **Stress Management Strategy:** The AI must optimize task flow by employing these strategies:
+    * **Micro-Breaks:** Inject 'Unallocated Focus Time' (UFT) blocks (min. 15 minutes) immediately after any task with a StressLevel > 0.7.
+    * **Task Interleaving:** Mix High Complexity tasks (StressLevel > 0.6) with Low Complexity tasks (StressLevel < 0.4) to facilitate cognitive recovery.
+    * **Allocation Logic:** When multiple workers are skilled, allocate the task to the worker who incurs the **lowest marginal increase** to the team's CWSS.
+
+---
+**REQUIRED OUTPUT:**
+---
+
+1.  **Feasibility Check & Manager Notification:** State the final status: "Perfect Schedule Confirmed" or "Stress Overload Detected - Manager Notification Required."
+
+2.  **Detailed Daily Schedule (Mandatory):** For every worker, provide a detailed **Day-to-Day Plan (Monday to Friday)** in a single comprehensive table format. The schedule must detail:
+    * **Worker Name**
+    * **Day of the Week**
+    * **Scheduled Task (or UFT/Training Block)**
+    * **Estimated Duration**
+    * **Cumulative Stress Impact (Daily WSS)**
+
+3.  **Escalation Report (If Infeasible):** If the schedule is infeasible (i.e., WSS > STT for anyone), identify the minimum set of Task IDs that must be **eliminated or redistributed** to bring the most stressed worker back under their threshold.
+
+4.  **Distribution Test (If Required by Manager):** **(Run this section only if the manager selects the 'Redistribute' option in a subsequent step).**
+    * **Test Status:** State whether the task(s) could be successfully redistributed among the remaining qualified and capable team members without causing a new WSS breach.
+    * **Final Action:** "Redistribution Successful" or "Redistribution Failed - Task Elimination Required."
