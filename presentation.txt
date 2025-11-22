@@ -1,0 +1,16 @@
+PRESENTATION
+- Problem Definition & User Need: A brief description
+of the chosen wellness issue and why it’s relevant
+and can be solved with the use of an agent.
+- Solution Concept Description: A clear outline of the
+proposed agentic AI solution – including the agent’s
+goal, its autonomous behaviours, and how it
+interacts with the user.
+- User Journey or Scenario: Show how an AI agent
+acts, learns, and responds autonomously in the
+chosen context
+- Mock Scenario or Dialogue (optional): To show the
+idea, you provide a short example of interaction or
+a use-case scenario. For instance, a sample dialogue
+between the user and the AI agent, demonstrating
+how the agent initiates and responds.
