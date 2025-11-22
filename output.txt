@@ -1,86 +1,19 @@
-**Answer:**
+**FEASIBILITY STATUS & MANAGER NOTIFICATION:**
+- Stress Overload Detected - Manager Notification Required.
 
-**1. FEASIBILITY STATUS & MANAGER NOTIFICATION:**
-- **Schedule Confirmed (WSS Met)**
+**DETAILED DAY-TO-DAY SCHEDULE:**
 
-**2. DETAILED DAY-TO-DAY SCHEDULE:**
+| Worker Name | Day of the Week | Scheduled Item | Estimated Duration (Hours) | Predicted Daily WSS |
+|-------------|-----------------|----------------|----------------------------|---------------------|
+| John        | Monday          | Task A         | 4                          | 0.6                 |
+| John        | Monday          | UFT            | 0.25                       | 0.2                 |
+| John        | Monday          | Task B         | 3                          | 0.5                 |
+| John        | Tuesday         | Task C         | 5                          | 0.8                 |
+| John        | Tuesday         | UFT            | 0.25                       | 0.2                 |
+| John        | Wednesday       | Task D         | 2                          | 0.3                 |
+| John        | Wednesday       | UFT            | 0.25                       | 0.2                 |
+| John        | Wednesday       | Task E         | 4                          | 0.7                 |
+| ...         | ...             | ...            | ...                        | ...                 |
 
-| Worker Name   | Day of the Week | Scheduled Item (Task ID or UFT) | Estimated Duration (Hours) | Predicted Daily WSS |
-|---------------|-----------------|---------------------------------|----------------------------|---------------------|
-| Lavoratore A  | Monday          | T001                            | 17                         | 0.44                |
-| Lavoratore A  | Monday          | UFT                             | 0.25                       | 0.44                |
-| Lavoratore A  | Monday          | T003                            | 10                         | 0.61                |
-| Lavoratore A  | Tuesday         | T011                            | 18                         | 0.75                |
-| Lavoratore A  | Tuesday         | UFT                             | 0.25                       | 0.75                |
-| Lavoratore A  | Tuesday         | T015                            | 32                         | 0.44                |
-| Lavoratore A  | Wednesday       | T016                            | 24                         | 0.88                |
-| Lavoratore A  | Wednesday       | UFT                             | 0.25                       | 0.88                |
-| Lavoratore A  | Wednesday       | T017                            | 17                         | 0.65                |
-| Lavoratore A  | Thursday        | T020                            | 14                         | 0.32                |
-| Lavoratore A  | Thursday        | UFT                             | 0.25                       | 0.32                |
-| Lavoratore A  | Thursday        | T022                            | 14                         | 0.61                |
-| Lavoratore A  | Friday          | T023                            | 11                         | 0.82                |
-| Lavoratore A  | Friday          | UFT                             | 0.25                       | 0.82                |
-| Lavoratore A  | Friday          | T025                            | 12                         | 0.36                |
-| Lavoratore B  | Monday          | T002                            | 25                         | 0.84                |
-| Lavoratore B  | Monday          | UFT                             | 0.25                       | 0.84                |
-| Lavoratore B  | Monday          | T004                            | 22                         | 0.76                |
-| Lavoratore B  | Tuesday         | T008                            | 33                         | 0.33                |
-| Lavoratore B  | Tuesday         | UFT                             | 0.25                       | 0.33                |
-| Lavoratore B  | Tuesday         | T009                            | 20                         | 0.91                |
-| Lavoratore B  | Wednesday       | T012                            | 33                         | 0.6                 |
-| Lavoratore B  | Wednesday       | UFT                             | 0.25                       | 0.6                 |
-| Lavoratore B  | Wednesday       | T013                            | 10                         | 0.65                |
-| Lavoratore B  | Thursday        | T018                            | 22                         | 0.84                |
-| Lavoratore B  | Thursday        | UFT                             | 0.25                       | 0.84                |
-| Lavoratore B  | Thursday        | T019                            | 32                         | 0.41                |
-| Lavoratore B  | Friday          | T021                            | 30                         | 0.43                |
-| Lavoratore B  | Friday          | UFT                             | 0.25                       | 0.43                |
-| Lavoratore B  | Friday          | T024                            | 18                         | 0.35                |
-| Lavoratore C  | Monday          | T005                            | 14                         | 0.75                |
-| Lavoratore C  | Monday          | UFT                             | 0.25                       | 0.75                |
-| Lavoratore C  | Monday          | T006                            | 37                         | 0.69                |
-| Lavoratore C  | Tuesday         | T010                            | 27                         | 0.55                |
-| Lavoratore C  | Tuesday         | UFT                             | 0.25                       | 0.55                |
-| Lavoratore C  | Tuesday         | T014                            | 28                         | 0.4                 |
-| Lavoratore C  | Wednesday       | T026                            | 11                         | 0.37                |
-| Lavoratore C  | Wednesday       | UFT                             | 0.25                       | 0.37                |
-| Lavoratore C  | Wednesday       | T027                            | 12                         | 0.33                |
-| Lavoratore C  | Thursday        | T028                            | 11                         | 0.47                |
-| Lavoratore C  | Thursday        | UFT                             | 0.25                       | 0.47                |
-| Lavoratore C  | Thursday        | T029                            | 20                         | 0.65                |
-| Lavoratore C  | Friday          | T030                            | 28                         | 0.75                |
-| Lavoratore C  | Friday          | UFT                             | 0.25                       | 0.75                |
-| Lavoratore C  | Friday          | T031                            | 22                         | 0.63                |
-| Lavoratore D  | Monday          | T032                            | 35                         | 0.82                |
-| Lavoratore D  | Monday          | UFT                             | 0.25                       | 0.82                |
-| Lavoratore D  | Monday          | T033                            | 14                         | 0.47                |
-| Lavoratore D  | Tuesday         | T034                            | 14                         | 0.46                |
-| Lavoratore D  | Tuesday         | UFT                             | 0.25                       | 0.46                |
-| Lavoratore D  | Tuesday         | T035                            | 14                         | 0.32                |
-| Lavoratore D  | Wednesday       | T036                            | 35                         | 0.64                |
-| Lavoratore D  | Wednesday       | UFT                             | 0.25                       | 0.64                |
-| Lavoratore D  | Wednesday       | T037                            | 20                         | 0.87                |
-| Lavoratore D  | Thursday        | T038                            | 19                         | 0.53                |
-| Lavoratore D  | Thursday        | UFT                             | 0.25                       | 0.53                |
-| Lavoratore D  | Thursday        | T039                            | 38                         | 0.71                |
-| Lavoratore D  | Friday          | T040                            | 29                         | 0.51                |
-| Lavoratore D  | Friday          | UFT                             | 0.25                       | 0.51                |
-| Lavoratore D  | Friday          | T041                            | 10                         | 0.94                |
-| Lavoratore E  | Monday          | T042                            | 16                         | 0.71                |
-| Lavoratore E  | Monday          | UFT                             | 0.25                       | 0.71                |
-| Lavoratore E  | Monday          | T043                            | 12                         | 0.7                 |
-| Lavoratore E  | Tuesday         | T044                            | 22                         | 0.4                 |
-| Lavoratore E  | Tuesday         | UFT                             | 0.25                       | 0.4                 |
-| Lavoratore E  | Tuesday         | T045                            | 40                         | 0.92                |
-| Lavoratore E  | Wednesday       | T046                            | 32                         | 0.55                |
-| Lavoratore E  | Wednesday       | UFT                             | 0.25                       | 0.55                |
-| Lavoratore E  | Wednesday       | T047                            | 39                         | 0.86                |
-| Lavoratore E  | Thursday        | T048                            | 15                         | 0.84                |
-| Lavoratore E  | Thursday        | UFT                             | 0.25                       | 0.84                |
-| Lavoratore E  | Thursday        | T049                            | 25                         | 0.65                |
-| Lavoratore E  | Friday          | T050                            | 27                         | 0.75                |
-| Lavoratore E  | Friday          | UFT                             | 0.25                       | 0.75                |
-
-**3. DISTRIBUTION TEST RESULTS:**
-- N/A (Redistribution not required)
+**DISTRIBUTION TEST RESULTS:**
+- Redistribution Failed - Task Elimination Required.
